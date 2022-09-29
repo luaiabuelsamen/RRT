@@ -27,16 +27,18 @@ def redraw(canvas):
     canvas.clear()
     canvas.markit(tx, ty, r=SMALLSTEP)
     drawGraph(G, canvas)
-    for o in obstacles: canvas.showRect(o, outline='blue', fill='blue')
+    for o in obstacles:
+        canvas.showRect(o, outline='blue', fill='blue')
     canvas.delete("debug")
 
 
 def drawGraph(G, canvas):
-    global vertices,nodes,edges
-    if not visualize: return
+    global vertices, nodes, edges
+    if not visualize:
+        return
     for i in G[edges]:
         # e.g. vertices: [[10, 270], [10, 280]]
-        canvas.polyline(  [vertices[i[0]], vertices[i[1]] ]  )
+        canvas.polyline([vertices[i[0]], vertices[i[1]]])
 
 
 # Use this function to generate points randomly for the RRT algo
@@ -65,44 +67,54 @@ def genPoint():
             x = random.gauss(tx, sigmax_for_randgen)
             y = random.gauss(ty, sigmay_for_randgen)
         else:
-            print ("Not yet implemented")
+            print("Not yet implemented")
             quit(1)
         # range check for gaussian
-        if x<0: bad = 1
-        if y<0: bad = 1
-        if x>XMAX: bad = 1
-        if y>YMAX: bad = 1
-    return [x,y]
+        if x < 0:
+            bad = 1
+        if y < 0:
+            bad = 1
+        if x > XMAX:
+            bad = 1
+        if y > YMAX:
+            bad = 1
+    return [x, y]
+
 
 def returnParent(k, canvas):
     """ Return parent note for input node k. """
     for e in G[edges]:
-        if e[1]==k:
-            canvas.polyline(  [vertices[e[0]], vertices[e[1]] ], style=3  )
+        if e[1] == k:
+            canvas.polyline([vertices[e[0]], vertices[e[1]]], style=3)
             return e[0]
 
+
 def genvertex():
-    vertices.append( genPoint() )
+    vertices.append(genPoint())
     return len(vertices)-1
+
 
 def pointToVertex(p):
     vertices.append(p)
     return len(vertices)-1
 
-def pickvertex():
-    return random.choice( range(len(vertices) ))
 
-def lineFromPoints(p1,p2):
+def pickvertex():
+    return random.choice(range(len(vertices)))
+
+
+def lineFromPoints(p1, p2):
     return (p1[1]-p2[1])/(p1[0]-p2[0])
 
 
-def pointPointDistance(p1,p2):
+def pointPointDistance(p1, p2):
     dist = ((p2[1]-p1[1])**2+(p2[0]-p1[0])**2)**0.5
     return dist
 
-def closestPointToPoint(G,p2):
+
+def closestPointToPoint(G, p2):
     minDist = 0
-    closest = (0,0)
+    closest = (0, 0)
     for i in range(len(G[0])):
         dist = pointPointDistance(vertices[i], p2)
         if dist < minDist:
@@ -110,116 +122,133 @@ def closestPointToPoint(G,p2):
             closest = vertices[i]
     return closest
 
-def lineHitsRect(p1,p2,r):
-    distance = pointPointDistance(p1,p2)
-    stepsize = 1
-    x = p1[0]
-    y = p1[1]
-    while(p2[0] != x):
-        x += stepsize*(p2[0]-p1[0])/distance
-        y += stepsize*(p2[1]-p1[1])/distance
-        if inRect((x,y), r, 1):
-            return True
-    return False
 
-def inRect(p,rect,dilation):
-   if p[0]<rect[0]-dilation: return 0
-   if p[1]<rect[1]-dilation: return 0
-   if p[0]>rect[2]+dilation: return 0
-   if p[1]>rect[3]+dilation: return 0
-   return 1
+def lineHitsRect(p1, p2, r):
+    distance = pointPointDistance(p1, p2)
+    x = (p2[0]-p1[0])/distance
+    y = (p2[1]-p1[1])/distance
+    d1 = x * r[0] + y * r[3]
+    d2 = x * r[2] + y * r[3]
+    d3 = x * r[0] + y * r[1]
+    d4 = x * r[2] + y * r[1]
+    if((d1 >= 0 and d2 >= 0 and d3 >= 0 and d4 >= 0) or (d1 < 0 and d2 < 0 and d3 < 0 and d4 < 0)):
+        return 0
+    return 1
 
-def addNewPoint(p1,p2,stepsize):
-    dist = pointPointDistance(p1,p2)
+
+def inRect(p, rect, dilation):
+    if p[0] < rect[0]-dilation:
+        return 0
+    if p[1] < rect[1]-dilation:
+        return 0
+    if p[0] > rect[2]+dilation:
+        return 0
+    if p[1] > rect[3]+dilation:
+        return 0
+    return 1
+
+
+def addNewPoint(p1, p2, stepsize):
+    dist = pointPointDistance(p1, p2)
     x = p1[0] + stepsize*(p2[0]-p1[0])/dist
     y = p1[1] + stepsize*(p2[1]-p1[1])/dist
-    pointToVertex((x,y))
+    pointToVertex((x, y))
     return len(vertices)-1
+
 
 def rrt_search(G, tx, ty, canvas):
     # Please carefully read the comments to get clues on where to start
-    #TODO
-    #Fill this function as needed to work ...
+    # TODO
+    # Fill this function as needed to work ...
     global sigmax_for_randgen, sigmay_for_randgen
-    n=0
-    nsteps=0
-    while 1: # Main loop
+    n = 0
+    nsteps = 0
+    while 1:  # Main loop
         # This generates a point in form of [x,y] from either the normal dist or the Gaussian dist
         p = genPoint()
 
         # This function must be defined by you to find the closest point in the existing graph to the guiding point
-        cp = closestPointToPoint(G,p)
-        v = addNewPoint(cp,p,SMALLSTEP)
+        cp = closestPointToPoint(G, p)
+        v = addNewPoint(cp, p, SMALLSTEP)
 
         if visualize:
             # if nsteps%500 == 0: redraw()  # erase generated points now and then or it gets too cluttered
-            n=n+1
-            if n>10:
+            n = n+1
+            if n > 10:
                 canvas.events()
-                n=0
-
-
+                n = 0
+        goNext = False
         for o in obstacles:
             # The following function defined by you must handle the occlusion cases
-            if lineHitsRect(vertices[v],p,o) or inRect(p,o,1):
-                print ("TODO")
-                #... reject
-
-        k = pointToVertex( p )   # is the new vertex ID
-        G[nodes].append(k)
-        G[edges].append( (v,k) )
-        if visualize:
-            canvas.polyline(  [vertices[v], vertices[k] ]  )
-
-        if pointPointDistance(p, [tx,ty] ) < SMALLSTEP:
-            print ("Target achieved.", nsteps, "nodes in entire tree")
-            if visualize:
-                t = pointToVertex([tx, ty])  # is the new vertex ID
-                G[edges].append((k, t))
-                if visualize:
-                    canvas.polyline([p, vertices[t]], 1)
-                # while 1:
-                #     # backtrace and show the solution ...
-                #     canvas.events()
-                nsteps = 0
-                totaldist = 0
-                while 1:
-                    oldp = vertices[k]  # remember point to compute distance
-                    k = returnParent(k, canvas)  # follow links back to root.
-                    canvas.events()
-                    if k <= 1: break  # have we arrived?
-                    nsteps = nsteps + 1  # count steps
-                    totaldist = totaldist + pointPointDistance(vertices[k], oldp)  # sum lengths
-                print ("Path length", totaldist, "using", nsteps, "nodes.")
-
-                global prompt_before_next
-                if prompt_before_next:
-                    canvas.events()
-                    print ("More [c,q,g,Y]>")
-                    d = sys.stdin.readline().strip().lstrip()
-                    print ("[" + d + "]")
-                    if d == "c": canvas.delete()
-                    if d == "q": return
-                    if d == "g": prompt_before_next = 0
+            if lineHitsRect(vertices[v], p, o) or inRect(p, o, 1):
+                goNext=True
                 break
+        if not goNext:
+            k = pointToVertex(p)   # is the new vertex ID
+            G[nodes].append(k)
+            G[edges].append((v, k))
+            if visualize:
+                canvas.polyline([vertices[v], vertices[k]])
+
+            if pointPointDistance(p, [tx, ty]) < SMALLSTEP:
+                print("Target achieved.", nsteps, "nodes in entire tree")
+                if visualize:
+                    t = pointToVertex([tx, ty])  # is the new vertex ID
+                    G[edges].append((k, t))
+                    if visualize:
+                        canvas.polyline([p, vertices[t]], 1)
+                    # while 1:
+                    #     # backtrace and show the solution ...
+                    #     canvas.events()
+                    nsteps = 0
+                    totaldist = 0
+                    while 1:
+                        oldp = vertices[k]  # remember point to compute distance
+                        k = returnParent(k, canvas)  # follow links back to root.
+                        canvas.events()
+                        if k <= 1:
+                            break  # have we arrived?
+                        nsteps = nsteps + 1  # count steps
+                        totaldist = totaldist + \
+                            pointPointDistance(vertices[k], oldp)  # sum lengths
+                    print("Path length", totaldist, "using", nsteps, "nodes.")
+
+                    global prompt_before_next
+                    if prompt_before_next:
+                        canvas.events()
+                        print("More [c,q,g,Y]>")
+                        d = sys.stdin.readline().strip().lstrip()
+                        print("[" + d + "]")
+                        if d == "c":
+                            canvas.delete()
+                        if d == "q":
+                            return
+                        if d == "g":
+                            prompt_before_next = 0
+                    break
+
 
 def main():
-    #seed
+    # seed
     random.seed(args.seed)
     if visualize:
-        canvas = drawSample.SelectRect(xmin=0,ymin=0,xmax=XMAX ,ymax=YMAX, nrects=0, keepcontrol=0)#, rescale=800/1800.)
-        for o in obstacles: canvas.showRect(o, outline='red', fill='blue')
+        canvas = drawSample.SelectRect(
+            xmin=0, ymin=0, xmax=XMAX, ymax=YMAX, nrects=0, keepcontrol=0)  # , rescale=800/1800.)
+        for o in obstacles:
+            canvas.showRect(o, outline='red', fill='blue')
     while 1:
         # graph G
         redraw(canvas)
-        G[edges].append( (0,1) )
+        G[edges].append((0, 1))
         G[nodes].append(1)
-        if visualize: canvas.markit( tx, ty, r=SMALLSTEP )
+        if visualize:
+            canvas.markit(tx, ty, r=SMALLSTEP)
         drawGraph(G, canvas)
         rrt_search(G, tx, ty, canvas)
 
     if visualize:
         canvas.mainloop()
+
 
 if __name__ == '__main__':
 
@@ -238,7 +267,8 @@ if __name__ == '__main__':
     # The boundaries of the world are (0,0) and (XMAX,YMAX)
 
     G = [[0], []]  # nodes, edges
-    vertices = [[args.start_pos_x, args.start_pos_y], [args.start_pos_x, args.start_pos_y + 10]]
+    vertices = [[args.start_pos_x, args.start_pos_y],
+                [args.start_pos_x, args.start_pos_y + 10]]
 
     # goal/target
     tx = args.target_pos_x
