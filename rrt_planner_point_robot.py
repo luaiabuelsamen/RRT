@@ -112,15 +112,22 @@ def closestPointToPoint(G,p2):
 
 def lineHitsRect(p1,p2,r):
     distance = pointPointDistance(p1,p2)
-    print(r, distance)
-    if distance <= r:
-        return False
-    return True
+    stepsize = 1
+    x = p1[0]
+    y = p1[1]
+    while(p2[0] != x):
+        x += stepsize*(p2[0]-p1[0])/distance
+        y += stepsize*(p2[1]-p1[1])/distance
+        if inRect((x,y), r, 1):
+            return True
+    return False
 
 def inRect(p,rect,dilation):
-    """ Return 1 in p is inside rect, dilated by dilation (for edge cases). """
-    #TODO
-    return False
+   if p[0]<rect[0]-dilation: return 0
+   if p[1]<rect[1]-dilation: return 0
+   if p[0]>rect[2]+dilation: return 0
+   if p[1]>rect[3]+dilation: return 0
+   return 1
 
 def addNewPoint(p1,p2,stepsize):
     dist = pointPointDistance(p1,p2)
