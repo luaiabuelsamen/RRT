@@ -87,6 +87,8 @@ def returnParent(k, canvas):
         if e[1] == k:
             canvas.polyline([vertices[e[0]], vertices[e[1]]], style=3)
             return e[0]
+        else:
+            return 1
 
 
 def genvertex():
@@ -123,17 +125,22 @@ def closestPointToPoint(G, p2):
     return closest
 
 
+#return true if slope of p3p1 > p2p1
+def checkSlope(p1,p2,p3):
+    return (p3[1]-p1[1]) / (p3[0]-p1[0]) > (p2[1]-p1[1]) / (p2[0]-p1[0])
+
+# Return true if line segments p1p2 and p3p4 intersect
+def intersect(p1,p2,p3,p4):
+    return checkSlope(p1,p2,p4) != checkSlope(p2,p3,p4) and checkSlope(p1,p2,p3) != checkSlope(p1,p2,p4)
+    
 def lineHitsRect(p1, p2, r):
-    distance = pointPointDistance(p1, p2)
-    x = (p2[0]-p1[0])/distance
-    y = (p2[1]-p1[1])/distance
-    d1 = x * r[0] + y * r[3]
-    d2 = x * r[2] + y * r[3]
-    d3 = x * r[0] + y * r[1]
-    d4 = x * r[2] + y * r[1]
-    if((d1 >= 0 and d2 >= 0 and d3 >= 0 and d4 >= 0) or (d1 < 0 and d2 < 0 and d3 < 0 and d4 < 0)):
-        return 0
-    return 1
+    i1 = intersect(p1,p2,(r[0],r[3]),(r[0],r[1]))
+    i2 = intersect(p1,p2,(r[2],r[3]),(r[2],r[1]))
+    i3 = intersect(p1,p2,(r[0],r[1]),(r[2],r[1]))
+    i4 = intersect(p1,p2,(r[2],r[3]),(r[0],r[3]))
+    if(i1 or i2 or i3 or i4):
+        return 1
+    return 0
 
 
 def inRect(p, rect, dilation):
@@ -157,9 +164,6 @@ def addNewPoint(p1, p2, stepsize):
 
 
 def rrt_search(G, tx, ty, canvas):
-    # Please carefully read the comments to get clues on where to start
-    # TODO
-    # Fill this function as needed to work ...
     global sigmax_for_randgen, sigmay_for_randgen
     n = 0
     nsteps = 0
@@ -172,7 +176,7 @@ def rrt_search(G, tx, ty, canvas):
         v = addNewPoint(cp, p, SMALLSTEP)
 
         if visualize:
-            # if nsteps%500 == 0: redraw()  # erase generated points now and then or it gets too cluttered
+            #if nsteps%500 == 0: redraw(canvas)  # erase generated points now and then or it gets too cluttered
             n = n+1
             if n > 10:
                 canvas.events()
@@ -189,7 +193,6 @@ def rrt_search(G, tx, ty, canvas):
             G[edges].append((v, k))
             if visualize:
                 canvas.polyline([vertices[v], vertices[k]])
-
             if pointPointDistance(p, [tx, ty]) < SMALLSTEP:
                 print("Target achieved.", nsteps, "nodes in entire tree")
                 if visualize:

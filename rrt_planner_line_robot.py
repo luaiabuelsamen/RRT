@@ -104,23 +104,47 @@ def lineFromPoints(p1,p2):
     return None
 
 
-def pointPointDistance(p1,p2):
-    #TODO
+def pointPointDistance(p1, p2):
+    dist = ((p2[1]-p1[1])**2+(p2[0]-p1[0])**2)**0.5
+    return dist
+
+def closestPointToPoint(G, p2):
+    minDist = 0
+    closest = (0, 0)
+    for i in range(len(G[0])):
+        dist = pointPointDistance(vertices[i], p2)
+        if dist < minDist:
+            dist = minDist
+            closest = vertices[i]
+    return closest
+
+#return true if slope of p3p1 > p2p1
+def checkSlope(p1,p2,p3):
+    return (p3[1]-p1[1]) / (p3[0]-p1[0]) > (p2[1]-p1[1]) / (p2[0]-p1[0])
+
+# Return true if line segments p1p2 and p3p4 intersect
+def intersect(p1,p2,p3,p4):
+    return checkSlope(p1,p2,p4) != checkSlope(p2,p3,p4) and checkSlope(p1,p2,p3) != checkSlope(p1,p2,p4)
+    
+def lineHitsRect(p1, p2, r):
+    i1 = intersect(p1,p2,(r[0],r[3]),(r[0],r[1]))
+    i2 = intersect(p1,p2,(r[2],r[3]),(r[2],r[1]))
+    i3 = intersect(p1,p2,(r[0],r[1]),(r[2],r[1]))
+    i4 = intersect(p1,p2,(r[2],r[3]),(r[0],r[3]))
+    if(i1 or i2 or i3 or i4):
+        return 1
     return 0
 
-def closestPointToPoint(G,p2):
-    #TODO
-    #return vertex index
-    return 0
-
-def lineHitsRect(p1,p2,r):
-    #TODO
-    return False
-
-def inRect(p,rect,dilation):
-    """ Return 1 in p is inside rect, dilated by dilation (for edge cases). """
-    #TODO
-    return False
+def inRect(p, rect, dilation):
+    if p[0] < rect[0]-dilation:
+        return 0
+    if p[1] < rect[1]-dilation:
+        return 0
+    if p[0] > rect[2]+dilation:
+        return 0
+    if p[1] > rect[3]+dilation:
+        return 0
+    return 1
 
 def rrt_search(G, tx, ty, canvas):
     #TODO
