@@ -21,7 +21,7 @@ import drawSample
 import sys
 import imageToRects
 import utils
-
+import math
 
 def redraw(canvas):
     canvas.clear()
@@ -87,9 +87,7 @@ def returnParent(k, canvas):
         if e[1] == k:
             canvas.polyline([vertices[e[0]], vertices[e[1]]], style=3)
             return e[0]
-        else:
-            return 1
-
+            
 
 def genvertex():
     vertices.append(genPoint())
@@ -115,14 +113,14 @@ def pointPointDistance(p1, p2):
 
 
 def closestPointToPoint(G, p2):
-    minDist = 0
-    closest = (0, 0)
-    for i in range(len(G[0])):
-        dist = pointPointDistance(vertices[i], p2)
+    nNear = 0
+    minDist = pointPointDistance(vertices[0], p2)
+    for node in G[nodes]:
+        dist = pointPointDistance(vertices[node], p2)
         if dist < minDist:
             dist = minDist
-            closest = vertices[i]
-    return closest
+            nNear = node
+    return nNear
 
 
 #return true if slope of p3p1 > p2p1
@@ -156,11 +154,19 @@ def inRect(p, rect, dilation):
 
 
 def addNewPoint(p1, p2, stepsize):
-    dist = pointPointDistance(p1, p2)
+#    theta = math.atan(lineFromPoints(p1,p2))
+    dist = pointPointDistance(p1,p2)
+#   *math.cos(theta), *math.sin(theta)
     x = p1[0] + stepsize*(p2[0]-p1[0])/dist
     y = p1[1] + stepsize*(p2[1]-p1[1])/dist
-    pointToVertex((x, y))
-    return len(vertices)-1
+    return (x,y)
+
+def hitsObstacles(obs, newp, p):
+    for o in obs:
+        # The following function defined by you must handle the occlusion cases
+        if lineHitsRect(newp, p, o) or inRect(newp, o, 1):
+            return False
+    return False
 
 
 def rrt_search(G, tx, ty, canvas):
@@ -172,28 +178,25 @@ def rrt_search(G, tx, ty, canvas):
         p = genPoint()
 
         # This function must be defined by you to find the closest point in the existing graph to the guiding point
-        cp = closestPointToPoint(G, p)
-        v = addNewPoint(cp, p, SMALLSTEP)
+        k = closestPointToPoint(G, p)
+        cp = vertices[k]
+        newPoint = addNewPoint(cp, p, SMALLSTEP)
 
         if visualize:
-            #if nsteps%500 == 0: redraw(canvas)  # erase generated points now and then or it gets too cluttered
+#            if nsteps%500 == 0: redraw(canvas)  # erase generated points now and then or it gets too cluttered
             n = n+1
             if n > 10:
                 canvas.events()
                 n = 0
-        goNext = False
-        for o in obstacles:
-            # The following function defined by you must handle the occlusion cases
-            if lineHitsRect(vertices[v], p, o) or inRect(p, o, 1):
-                goNext=True
-                break
-        if not goNext:
-            k = pointToVertex(p)   # is the new vertex ID
-            G[nodes].append(k)
-            G[edges].append((v, k))
+
+        if not hitsObstacles(obstacles,newPoint, cp):
+            v = pointToVertex(newPoint)
+            G[nodes].append(v)
+            G[edges].append((k,v))
             if visualize:
                 canvas.polyline([vertices[v], vertices[k]])
-            if pointPointDistance(p, [tx, ty]) < SMALLSTEP:
+#                canvas.markit(p[0], p[1], r=1)
+            if pointPointDistance(newPoint, [tx, ty]) < SMALLSTEP:
                 print("Target achieved.", nsteps, "nodes in entire tree")
                 if visualize:
                     t = pointToVertex([tx, ty])  # is the new vertex ID
@@ -229,6 +232,7 @@ def rrt_search(G, tx, ty, canvas):
                         if d == "g":
                             prompt_before_next = 0
                     break
+            nsteps += 1
 
 
 def main():
@@ -249,8 +253,8 @@ def main():
         drawGraph(G, canvas)
         rrt_search(G, tx, ty, canvas)
 
-    if visualize:
-        canvas.mainloop()
+        if visualize:
+            canvas.mainloop()
 
 
 if __name__ == '__main__':
