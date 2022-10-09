@@ -147,7 +147,7 @@ def rrt_search(G, tx, ty, canvas):
     nsteps=0
     while 1:
         randp = genPoint()
-        if n%100 == 0: randp = (tx,ty)
+#        if n%100 == 0: randp = (tx,ty)
         v = closestPointToPoint(G,randp)
         nearp = vertices[v]
         nextp = addNewPoint(nearp, randp, SMALLSTEP)
@@ -165,6 +165,7 @@ def rrt_search(G, tx, ty, canvas):
                 freeSpace = 0
 
         if freeSpace:
+            nsteps += 1
             k = pointToVertex( nextp )   # is the new vertex ID
             G[nodes].append(k)
             G[edges].append( (v,k) )
