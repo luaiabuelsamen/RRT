@@ -5,6 +5,7 @@ import sys
 import imageToRects
 import utils
 import math
+import matplotlib.pyplot as plt
 
 def redraw(canvas):
     canvas.clear()
@@ -57,14 +58,14 @@ def genPoint():
         if theta<0: bad = 1
         if x>XMAX: bad = 1
         if y>YMAX: bad = 1
-        if theta>math.pi: bad = 1
+
     return [x,y,theta]
 
 def returnParent(k, canvas):
     """ Return parent note for input node k. """
     for e in G[edges]:
         if e[1]==k:
-            canvas.polyline(  [vertices[e[0]], vertices[e[1]] ], style=3  )
+            #replaced to display a line robot
             return e[0]
 
 def genvertex():
@@ -135,7 +136,7 @@ def addNewPoint(p1, p2, stepsize, stepangle):
     if dist > stepsize:
         x = p1[0] + stepsize*(p2[0]-p1[0])/dist
         y = p1[1] + stepsize*(p2[1]-p1[1])/dist
-    return (x,y,theta)
+    return [x,y,theta]
 
 def robotEnds(x):
     p1 = [x[0] + int(ROBOTLENGTH/2*math.cos(x[2])), x[1] + int(ROBOTLENGTH/2*math.sin(x[2]))]
@@ -146,6 +147,7 @@ def robotEnds(x):
 def rrt_search(G, tx, ty, tt, canvas):
     global sigmax_for_randgen, sigmay_for_randgen
     n=0
+    niters=0
     nsteps=0
     while 1:
         randp = genPoint()
@@ -165,7 +167,8 @@ def rrt_search(G, tx, ty, tt, canvas):
 
         freeSpace = 1
         for o in obstacles :
-            if lineHitsRect(nearp,nextp,o) or lineHitsRect(nearRobot[0], nextRobot[0], o) or lineHitsRect(nearRobot[1], nextRobot[1], o):
+            #check if ends or line robot is in obstacle
+            if lineHitsRect(nextRobot[0],nextRobot[1],o) or inRect(nextRobot[0],o,1) or inRect(nextRobot[1],o,1):
                 freeSpace = 0
 
         if freeSpace:
@@ -175,14 +178,17 @@ def rrt_search(G, tx, ty, tt, canvas):
             G[edges].append( (v,k) )
             if visualize:
                 canvas.polyline(  [nextRobot[0], nextRobot[1]] )
-
-            if pointPointDistance( nextp, [tx,ty] ) < SMALLSTEP:
+            
+            #check if ends or mid is at target
+            if (pointPointDistance( nextp, [tx,ty] ) < SMALLSTEP) or (pointPointDistance( nextRobot[0], [tx,ty] ) < SMALLSTEP) or (pointPointDistance( nextRobot[1], [tx,ty] ) < SMALLSTEP):
                 print ("Target achieved.", nsteps, "nodes in entire tree")
                 if visualize:
                     t = pointToVertex([tx, ty])  # is the new vertex ID
                     G[edges].append((k, t))
                     if visualize:
                         canvas.polyline([nextp, vertices[t]], 1)
+                        #show final line robot
+                        canvas.polyline(  [nextRobot[0], nextRobot[1]],style=3  )
                     # while 1:
                     #     # backtrace and show the solution ...
                     #     canvas.events()
@@ -191,7 +197,9 @@ def rrt_search(G, tx, ty, tt, canvas):
                     while 1:
                         oldp = vertices[k]  # remember point to compute distance
                         k = returnParent(k, canvas)  # follow links back to root.
-                        canvas.events()
+                        #show line robot at parent
+                        if visualize: canvas.polyline(  [robotEnds(vertices[k])[0], robotEnds(vertices[k])[1] ], style=3  )
+                        if visualize: canvas.events()
                         if k <= 1: break  # have we arrived?
                         nsteps = nsteps + 1  # count steps
                         totaldist = totaldist + pointPointDistance(vertices[k], oldp)  # sum lengths
@@ -207,6 +215,7 @@ def rrt_search(G, tx, ty, tt, canvas):
                         if d == "q": return
                         if d == "g": prompt_before_next = 0
                     break
+        niters += 1
 
 def main():
     # seed
@@ -223,6 +232,7 @@ def main():
         G[nodes].append(1)
         if visualize:
             canvas.markit(tx, ty, r=SMALLSTEP)
+            canvas.markit(args.start_pos_x, args.start_pos_y, r=SMALLSTEP)
         drawGraph(G, canvas)
         rrt_search(G, tx, ty, tt, canvas)
 
@@ -238,8 +248,8 @@ if __name__ == '__main__':
 
     prompt_before_next = 1  # ask before re-running sonce solved
     SMALLSTEP = args.step_size  # what our "local planner" can handle.
-    SMALLANGLE = math.pi/20
-    ROBOTLENGTH = 20
+    SMALLANGLE = math.pi/10
+    ROBOTLENGTH = args.robot_length
     map_size, obstacles = imageToRects.imageToRects(args.world)
     # Note the obstacles are the two corner points of a rectangle (left-top, right-bottom)
     # Each obstacle is (x1,y1), (x2,y2), making for 4 points
@@ -249,13 +259,13 @@ if __name__ == '__main__':
     # The boundaries of the world are (0,0) and (XMAX,YMAX)
 
     G = [[0], []]  # nodes, edges
-    vertices = [[args.start_pos_x, args.start_pos_y, 0],
-                [args.start_pos_x, args.start_pos_y + 10, 0]]
+    vertices = [[args.start_pos_x, args.start_pos_y, args.start_pos_theta],
+                [args.start_pos_x, args.start_pos_y + 10, args.start_pos_theta]]
 
     # goal/target
     tx = args.target_pos_x
     ty = args.target_pos_y
-    tt = 0
+    tt = args.target_pos_theta
     # start
     sigmax_for_randgen = XMAX / 2.0
     sigmay_for_randgen = YMAX / 2.0
@@ -263,3 +273,26 @@ if __name__ == '__main__':
     edges = 1
 
     main()
+    
+    #code written to graph
+    if 0:
+        lens = [i for i in range(5,51,9)]
+        iters = []
+        for ROBOTLENGTH in lens:
+            itern = 0
+            for i in range(10):
+                print(i)
+                canvas = None
+                G[edges].append((0, 1))
+                G[nodes].append(1)
+                itern += rrt_search(G, tx, ty, tt, canvas)
+            iters.append(itern/10)
+
+        print(lens, iters)
+        plt.bar(lens, iters, color ='maroon', width = 4)
+    
+        plt.xlabel("Robot Size")
+        plt.ylabel("Average iterations for 10 runs")
+        plt.title("Varying  Robot size effect on iterations")
+        plt.show()        
+

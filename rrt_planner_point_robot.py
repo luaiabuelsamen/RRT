@@ -22,6 +22,7 @@ import sys
 import imageToRects
 import utils
 import math
+import matplotlib.pyplot as plt
 
 def redraw(canvas):
     canvas.clear()
@@ -77,7 +78,7 @@ def returnParent(k, canvas):
     """ Return parent note for input node k. """
     for e in G[edges]:
         if e[1]==k:
-            canvas.polyline(  [vertices[e[0]], vertices[e[1]] ], style=3  )
+            if visualize: canvas.polyline(  [vertices[e[0]], vertices[e[1]] ], style=3  )
             return e[0]
 
 def genvertex():
@@ -145,6 +146,7 @@ def rrt_search(G, tx, ty, canvas):
     global sigmax_for_randgen, sigmay_for_randgen
     n=0
     nsteps=0
+    nodenum = 0
     while 1:
         randp = genPoint()
 #        if n%100 == 0: randp = (tx,ty)
@@ -158,6 +160,8 @@ def rrt_search(G, tx, ty, canvas):
             if n>10:
                 canvas.events()
                 n=0
+            if nodenum < 50:
+                canvas.markit(randp[0], randp[1], r=SMALLSTEP)
 
         freeSpace = 1
         for o in obstacles :
@@ -165,7 +169,7 @@ def rrt_search(G, tx, ty, canvas):
                 freeSpace = 0
 
         if freeSpace:
-            nsteps += 1
+            nodenum += 1
             k = pointToVertex( nextp )   # is the new vertex ID
             G[nodes].append(k)
             G[edges].append( (v,k) )
@@ -173,7 +177,7 @@ def rrt_search(G, tx, ty, canvas):
                 canvas.polyline(  [nearp, nextp] )
 
             if pointPointDistance( nextp, [tx,ty] ) < SMALLSTEP:
-                print ("Target achieved.", nsteps, "nodes in entire tree")
+                print ("Target achieved.", nodenum, "nodes in entire tree")
                 if visualize:
                     t = pointToVertex([tx, ty])  # is the new vertex ID
                     G[edges].append((k, t))
@@ -219,6 +223,7 @@ def main():
         G[nodes].append(1)
         if visualize:
             canvas.markit(tx, ty, r=SMALLSTEP)
+            canvas.markit(args.start_pos_x, args.start_pos_y, r=SMALLSTEP)
         drawGraph(G, canvas)
         rrt_search(G, tx, ty, canvas)
 
@@ -256,4 +261,37 @@ if __name__ == '__main__':
     nodes = 0
     edges = 1
 
-    main()
+    main() 
+    if 0:
+        nodenums = []
+        paths = []
+        steps = [i for i in range(6,206,20)]
+        for SMALLSTEP in steps:
+            node, path = 0, 0
+            for i in range(10):
+                print(i)
+                canvas = None
+                G[edges].append((0, 1))
+                G[nodes].append(1)
+                ret = rrt_search(G, tx, ty, canvas)
+                node += ret[0]
+                path += ret[1]
+            nodenums.append(node/10)
+            paths.append(path/10)
+
+        print(steps)
+        print(nodenums, paths)
+        plt.bar(steps, nodenums, color ='maroon', width = 4)
+    
+        plt.xlabel("Step Size")
+        plt.ylabel("Average nodes in Tree for 10 runs")
+        plt.title("Varying Stepsize effect on tree")
+        plt.show()        
+
+        plt.bar(steps, paths, color ='maroon', width = 4)
+    
+
+        plt.xlabel("Step Size")
+        plt.ylabel("Average path length in Tree for 10 runs")
+        plt.title("Varying Stepsize effect on path length")
+        plt.show()   
