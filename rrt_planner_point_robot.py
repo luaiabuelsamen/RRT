@@ -1,20 +1,3 @@
-'''
-Hello and welcome to the first assignment :)
-Please try to enjoy implementing algorithms you learned from the course; in this regard, we also have tried
-to provide a good starting point for you to develop your own code. In this script, you may find different functions
-that should be defined by you to perform specific tasks. A good suggestion would be to begin with the primary
-function for the RRT algo named as "rrt_search". Following this function line by line you may realize how to define
-each function to make it work!
-Note, you may use the following commands to run this script with the required arguments:
-python3 rrt_planner_point_robot.py --arg1_name your_input1 --arg2_name your_input2 e.g.
-python3 rrt_planner_point_robot.py --world="shot.png"
-To see the list of arguments, take a look at utils.py
-Also note:
-G is a list containing two groups: the first group includes the nodes IDs (0,1,2,...), while the second holds all pairs of nodes creating an edge
-Vertices is a list of nodes locations in the map; it corresponds to the nodes' IDs mentioned earlier
-GOOD LUCK!
-'''
-
 from dis import dis
 import random
 import drawSample
@@ -38,21 +21,7 @@ def drawGraph(G, canvas):
         # e.g. vertices: [[10, 270], [10, 280]]
         canvas.polyline(  [vertices[i[0]], vertices[i[1]] ]  )
 
-
-# Use this function to generate points randomly for the RRT algo
 def genPoint():
-    # if args.rrt_sampling_policy == "uniform":
-    #     # Uniform distribution
-    #     x = random.random()*XMAX
-    #     y = random.random()*YMAX
-    # elif args.rrt_sampling_policy == "gaussian":
-    #     # Gaussian with mean at the goal
-    #     x = random.gauss(tx, sigmax_for_randgen)
-    #     y = random.gauss(ty, sigmay_for_randgen)
-    # else:
-    #     print ("Not yet implemented")
-    #     quit(1)
-
     bad = 1
     while bad:
         bad = 0

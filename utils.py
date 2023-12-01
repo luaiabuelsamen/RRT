@@ -1,7 +1,7 @@
 import argparse
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--world', type=str, default="shot.png")
+    parser.add_argument('--world', type=str, default="./maps/shot.png")
     parser.add_argument('--step_size', type=int, default=6)
     parser.add_argument('--rrt_sampling_policy', type=str, default="uniform")
 
