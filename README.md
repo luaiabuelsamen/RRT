@@ -7,9 +7,9 @@ This project implements the Rapidly-exploring Random Tree (RRT) algorithm for di
 
 ### A. RRT with Uniform Sampling
 
-![Alt text](./examples/RRT1)
-![Alt text](./examples/RRT2)
-![Alt text](./examples/RRT3)
+![Alt text](./Examples/RRT1)
+![Alt text](./Examples/RRT2)
+![Alt text](./Examples/RRT3)
 - **Objective**: Implement RRT for an omnidirectional point robot using uniform sampling.
 - **Results**:
   - Figures 1 and 2 show results for 'shot.png' and 'simple.png' with a point robot.
@@ -18,8 +18,8 @@ This project implements the Rapidly-exploring Random Tree (RRT) algorithm for di
 
 ### B. RRT with Gaussian Distribution
 
-![Alt text](./examples/RRT4)
-![Alt text](./examples/RRT5)
+![Alt text](./Examples/RRT4)
+![Alt text](./Examples/RRT5)
 - **Objective**: Implement RRT with Gaussian distribution centered on the target.
 - **Results**:
   - Figure 4 shows the RRT implementation for a point robot with Gaussian distribution.
@@ -27,8 +27,8 @@ This project implements the Rapidly-exploring Random Tree (RRT) algorithm for di
 
 ### C. Varying Timestep with Gaussian Distribution
 
-![Alt text](./examples/RRT6)
-![Alt text](./examples/RRT7)
+![Alt text](./Examples/RRT6)
+![Alt text](./Examples/RRT7)
 - **Objective**: Analyze the effect of varying step size on RRT with Gaussian distribution.
 - **Results**:
   - Figures 6 and 7 depict the number of nodes vs. step size and path length vs. step size, respectively.
@@ -38,14 +38,14 @@ This project implements the Rapidly-exploring Random Tree (RRT) algorithm for di
 
 ### A. Uniform Sampling with Line Robot
 
-![Alt text](./examples/Picture1)
-![Alt text](./examples/RRT10)
+![Alt text](./Examples/Picture1)
+![Alt text](./Examples/RRT10)
 - **Objective**: Implement RRT for a line robot using uniform sampling.
 - **Results**:
   - Figures 8 and 9 show results for 'shot.png' and 'simple.png' with a line robot.
   - The line robot avoids incorrect paths more effectively compared to the point robot.
 
-![Alt text](./examples/Picture2)
+![Alt text](./Examples/Picture2)
 ### B. Varying Robot Length for Line Robot
 
 - **Objective**: Study the impact of different robot lengths on the line robot's performance.
