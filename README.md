@@ -7,7 +7,7 @@ This project implements the Rapidly-exploring Random Tree (RRT) algorithm for di
 
 ### A. RRT with Uniform Sampling
 
-![Alt text](./Examples/RRT1.jpg)
+![Alt text](./Examples/RRT.jpg)
 ![Alt text](./Examples/RRT2.jpg)
 ![Alt text](./Examples/RRT3.jpg)
 - **Objective**: Implement RRT for an omnidirectional point robot using uniform sampling.
